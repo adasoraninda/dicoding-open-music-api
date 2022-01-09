@@ -26,8 +26,13 @@ class SongsService {
     return result.rows[0].id;
   }
 
-  async getSongs() {
-    const result = await this._pool.query("SELECT * FROM songs");
+  async getSongs({ title, performer }) {
+    const query = {
+      text: "SELECT * FROM songs WHERE ($1 IS NULL OR title = $1) AND ($2 IS NULL OR performer = $2)",
+      values: [title, performer],
+    };
+
+    const result = await this._pool.query(query);
 
     return result.rows.map(mapSongDBToModel.list);
   }
@@ -35,7 +40,7 @@ class SongsService {
   async getSongById(id) {
     const query = {
       text: "SELECT * FROM songs WHERE id = $1",
-      value: [id],
+      values: [id],
     };
 
     const result = await this._pool.query(query);
@@ -49,7 +54,7 @@ class SongsService {
 
   async editSongById(id, { title, year, genre, performer, duration, albumId }) {
     const query = {
-      text: "UPDATE songs SET name = $1, year = $2, genre = $3, performer = $4, duration = $5, album_id = $6 WHERE id = $3 RETURNING id",
+      text: "UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, album_id = $6 WHERE id = $7 RETURNING id",
       values: [title, year, genre, performer, duration, albumId, id],
     };
 
