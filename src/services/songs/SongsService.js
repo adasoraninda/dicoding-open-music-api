@@ -31,26 +31,26 @@ class SongsService {
 
     if (title && performer) {
       query = {
-        text: "SELECT * FROM songs WHERE title ILIKE '%' || $1 || '%' AND performer ILIKE '%' || $2 || '%'",
+        text: "SELECT id, title, performer FROM songs WHERE title ILIKE '%' || $1 || '%' AND performer ILIKE '%' || $2 || '%'",
         values: [title, performer],
       };
     } else if (title) {
       query = {
-        text: "SELECT * FROM songs WHERE title ILIKE '%' || $1 || '%'",
+        text: "SELECT id, title, performer FROM songs WHERE title ILIKE '%' || $1 || '%'",
         values: [title],
       };
     } else if (performer) {
       query = {
-        text: "SELECT * FROM songs WHERE performer ILIKE '%' || $1 || '%'",
+        text: "SELECT id, title, performer FROM songs WHERE performer ILIKE '%' || $1 || '%'",
         values: [performer],
       };
     } else {
-      query = "SELECT * FROM songs";
+      query = "SELECT id, title, performer FROM songs";
     }
 
     const result = await this._pool.query(query);
 
-    return result.rows.map(mapSongDBToModel.list);
+    return result.rows.map(mapSongDBToModel);
   }
 
   async getSongById(id) {
@@ -61,11 +61,11 @@ class SongsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Lagu tidak ditemukan");
     }
 
-    return result.rows.map(mapSongDBToModel.detail)[0];
+    return result.rows.map(mapSongDBToModel)[0];
   }
 
   async editSongById(id, { title, year, genre, performer, duration, albumId }) {
@@ -76,7 +76,7 @@ class SongsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Gagal memperbarui lagu, Id tidak ditemukan");
     }
   }
@@ -89,7 +89,7 @@ class SongsService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError("Lagu gagal dihapus. Id tidak ditemukan");
     }
   }
