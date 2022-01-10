@@ -10,7 +10,7 @@ class SongsService {
   }
 
   async addSong({ title, year, genre, performer, duration, albumId }) {
-    const id = nanoid(16);
+    const id = `song-${nanoid(16)}`;
 
     const query = {
       text: "INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
@@ -27,10 +27,26 @@ class SongsService {
   }
 
   async getSongs({ title, performer }) {
-    const query = {
-      text: "SELECT * FROM songs WHERE ($1 IS NULL OR title = $1) AND ($2 IS NULL OR performer = $2)",
-      values: [title, performer],
-    };
+    let query;
+
+    if (title && performer) {
+      query = {
+        text: "SELECT * FROM songs WHERE title ILIKE '%' || $1 || '%' AND performer ILIKE '%' || $2 || '%'",
+        values: [title, performer],
+      };
+    } else if (title) {
+      query = {
+        text: "SELECT * FROM songs WHERE title ILIKE '%' || $1 || '%'",
+        values: [title],
+      };
+    } else if (performer) {
+      query = {
+        text: "SELECT * FROM songs WHERE performer ILIKE '%' || $1 || '%'",
+        values: [performer],
+      };
+    } else {
+      query = "SELECT * FROM songs";
+    }
 
     const result = await this._pool.query(query);
 

@@ -40,12 +40,12 @@ exports.up = (pgm) => {
     },
     album_id: {
       type: "VARCHAR(50)",
-      foreignKeys: true,
+      references: "albums",
     },
   });
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable("albums");
+  pgm.dropTable("albums", { cascade: true });
   pgm.dropTable("songs");
 };
